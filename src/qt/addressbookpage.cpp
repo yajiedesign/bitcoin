@@ -11,14 +11,14 @@
 
 #include "addresstablemodel.h"
 #include "bitcoingui.h"
-#include "editaddressdialog.h"
 #include "csvmodelwriter.h"
+#include "editaddressdialog.h"
 #include "guiutil.h"
 
-#include <QSortFilterProxyModel>
-#include <QClipboard>
-#include <QMessageBox>
+#include <QIcon>
 #include <QMenu>
+#include <QMessageBox>
+#include <QSortFilterProxyModel>
 
 AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
     QDialog(parent),
@@ -263,10 +263,9 @@ void AddressBookPage::done(int retval)
 void AddressBookPage::on_exportButton_clicked()
 {
     // CSV is currently the only supported format
-    QString filename = GUIUtil::getSaveFileName(
-            this,
-            tr("Export Address List"), QString(),
-            tr("Comma separated file (*.csv)"));
+    QString filename = GUIUtil::getSaveFileName(this,
+        tr("Export Address List"), QString(),
+        tr("Comma separated file (*.csv)"), NULL);
 
     if (filename.isNull()) return;
 

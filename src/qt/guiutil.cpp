@@ -5,33 +5,12 @@
 #include "guiutil.h"
 
 #include "bitcoinaddressvalidator.h"
-#include "walletmodel.h"
 #include "bitcoinunits.h"
+#include "walletmodel.h"
 
-#include "util.h"
+#include "core.h"
 #include "init.h"
-
-#include <QApplication>
-#include <QDateTime>
-#include <QDoubleValidator>
-#include <QFont>
-#include <QLineEdit>
-#if QT_VERSION >= 0x050000
-#include <QUrlQuery>
-#else
-#include <QUrl>
-#endif
-#include <QTextDocument> // for Qt::mightBeRichText
-#include <QAbstractItemView>
-#include <QClipboard>
-#include <QFileDialog>
-#include <QDesktopServices>
-#include <QThread>
-#include <QSettings>
-#include <QDesktopWidget>
-
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include "util.h"
 
 #ifdef WIN32
 #ifdef _WIN32_WINNT
@@ -46,9 +25,31 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include "shlwapi.h"
-#include "shlobj.h"
 #include "shellapi.h"
+#include "shlobj.h"
+#include "shlwapi.h"
+#endif
+
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <QAbstractItemView>
+#include <QApplication>
+#include <QClipboard>
+#include <QDateTime>
+#include <QDesktopServices>
+#include <QDesktopWidget>
+#include <QDoubleValidator>
+#include <QFileDialog>
+#include <QFont>
+#include <QLineEdit>
+#include <QSettings>
+#include <QTextDocument> // for Qt::mightBeRichText
+#include <QThread>
+
+#if QT_VERSION < 0x050000
+#include <QUrl>
+#else
+#include <QUrlQuery>
 #endif
 
 namespace GUIUtil {
@@ -272,6 +273,41 @@ QString getSaveFileName(QWidget *parent, const QString &caption, const QString &
     /* Return selected suffix if asked to */
     if(selectedSuffixOut)
     {
+        *selectedSuffixOut = selectedSuffix;
+    }
+    return result;
+}
+
+QString getOpenFileName(QWidget *parent, const QString &caption, const QString &dir,
+    const QString &filter,
+    QString *selectedSuffixOut)
+{
+    QString selectedFilter;
+    QString myDir;
+    if(dir.isEmpty()) // Default to user documents location
+    {
+#if QT_VERSION < 0x050000
+        myDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+#else
+        myDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+#endif
+    }
+    else
+    {
+        myDir = dir;
+    }
+    /* Directly convert path to native OS path separators */
+    QString result = QDir::toNativeSeparators(QFileDialog::getOpenFileName(parent, caption, myDir, filter, &selectedFilter));
+
+    if(selectedSuffixOut)
+    {
+        /* Extract first suffix from filter pattern "Description (*.foo)" or "Description (*.foo *.bar ...) */
+        QRegExp filter_re(".* \\(\\*\\.(.*)[ \\)]");
+        QString selectedSuffix;
+        if(filter_re.exactMatch(selectedFilter))
+        {
+            selectedSuffix = filter_re.cap(1);
+        }
         *selectedSuffixOut = selectedSuffix;
     }
     return result;
