@@ -258,7 +258,7 @@ enum GetMinFee_mode
     GMF_SEND,
 };
 
-int64_t GetMinFee(const CTransaction& tx, bool fAllowFree, enum GetMinFee_mode mode);
+int64_t GetMinFee(const CTransaction& tx, unsigned int nBytes, bool fAllowFree, enum GetMinFee_mode mode);
 
 //
 // Check transaction inputs, and make sure any
@@ -937,7 +937,7 @@ private:
     unsigned char chRejectCode;
     bool corruptionPossible;
 public:
-    CValidationState() : mode(MODE_VALID), nDoS(0) {}
+    CValidationState() : mode(MODE_VALID), nDoS(0), corruptionPossible(false) {}
     bool DoS(int level, bool ret = false,
              unsigned char chRejectCodeIn=0, std::string strRejectReasonIn="",
              bool corruptionIn=false) {
